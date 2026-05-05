@@ -100,7 +100,7 @@ export class SubsonicClient {
         const json = await res.json() as any
         const sr = json['subsonic-response']
         if (sr.status === 'failed') {
-          throw new SubsonicError(sr.error.code, sr.error.message, false)
+          throw new SubsonicError(sr.error?.code ?? -1, sr.error?.message ?? 'Unknown server error', false)
         }
         return sr as T
       } catch (e) {
@@ -204,7 +204,7 @@ export class SubsonicClient {
 
   async scrobble(id: string, opts: { submission: boolean; time?: number }): Promise<void> {
     const extra: Record<string, string> = { id, submission: String(opts.submission) }
-    if (opts.time) extra.time = String(opts.time)
+    if (opts.time !== undefined) extra.time = String(opts.time)
     await this.request('scrobble', extra).catch(() => {})
   }
 
@@ -236,8 +236,18 @@ export class SubsonicClient {
   }
 
   async savePlayQueue(songIds: string[], current: string, position: number): Promise<void> {
-    const extra: Record<string, string> = { current, position: String(Math.floor(position)) }
-    await this.request('savePlayQueue', { ...extra, id: songIds.join(',') }).catch(() => {})
+    const params = this.buildParams({ current, position: String(Math.floor(position)) })
+    for (const id of songIds) params.append('id', id)
+    const url = `${this.creds.url}/rest/savePlayQueue?${params}`
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(20_000) })
+      if (!res.ok) return
+      const json = await res.json() as any
+      const sr = json['subsonic-response']
+      if (sr?.status === 'failed') return
+    } catch {
+      // swallow errors — fire and forget
+    }
   }
 
   async getPlayQueue(): Promise<{ currentId: string; songs: Song[] } | null> {
