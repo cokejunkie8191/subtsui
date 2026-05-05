@@ -6,7 +6,9 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
-    "types": ["bun-types"]
+    "types": ["bun-types"],
+    "lib": ["ESNext"],
+    "resolveJsonModule": true
   },
   "include": ["src", "tests"]
 }
