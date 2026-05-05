@@ -7,7 +7,7 @@
     "strict": true,
     "skipLibCheck": true,
     "types": ["bun-types"],
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "resolveJsonModule": true
   },
   "include": ["src", "tests"]
