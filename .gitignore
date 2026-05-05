@@ -1,0 +1,19 @@
+# Original Go source (reference only, not part of TypeScript project)
+_reference/
+
+# Brainstorming session files
+.superpowers/
+
+# TypeScript / Bun
+node_modules/
+dist/
+*.js.map
+
+# env file
+.env
+
+# Log files
+*.log
+
+# Bun lockfile is committed, but ignore generated artifacts
+bun.lockb.bak
