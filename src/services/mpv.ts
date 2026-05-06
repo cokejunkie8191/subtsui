@@ -17,7 +17,7 @@ export class MpvClient extends EventEmitter {
   constructor(socketPath?: string) {
     super()
     const uid = process.getuid?.() ?? 0
-    this.socketPath = socketPath ?? `/tmp/tuimusic_mpv_${uid}.sock`
+    this.socketPath = socketPath ?? `/tmp/subtsui_mpv_${uid}.sock`
   }
 
   async spawn(opts: {

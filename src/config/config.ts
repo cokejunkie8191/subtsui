@@ -43,7 +43,7 @@ function tomlToAppConfig(raw: Record<string, any>): Partial<AppConfig> {
 }
 
 export async function loadConfig(configDir?: string): Promise<AppConfig> {
-  const dir = configDir ?? join(homedir(), '.config', '<appname>')
+  const dir = configDir ?? join(homedir(), '.config', 'subtsui')
   try {
     const raw = await readFile(join(dir, 'config.toml'), 'utf8')
     const parsed = parse(raw) as Record<string, any>
@@ -54,7 +54,7 @@ export async function loadConfig(configDir?: string): Promise<AppConfig> {
 }
 
 export async function loadCredentials(configDir?: string): Promise<Credentials | null> {
-  const dir = configDir ?? join(homedir(), '.config', '<appname>')
+  const dir = configDir ?? join(homedir(), '.config', 'subtsui')
   try {
     const raw = await readFile(join(dir, 'credentials.toml'), 'utf8')
     const parsed = parse(raw) as any
@@ -74,7 +74,7 @@ export async function loadCredentials(configDir?: string): Promise<Credentials |
 }
 
 export async function saveCredentials(creds: Credentials, configDir?: string): Promise<void> {
-  const dir = configDir ?? join(homedir(), '.config', '<appname>')
+  const dir = configDir ?? join(homedir(), '.config', 'subtsui')
   await mkdir(dir, { recursive: true })
   const lines = [
     '[server]',

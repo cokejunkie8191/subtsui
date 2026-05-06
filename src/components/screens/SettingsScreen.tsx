@@ -9,7 +9,7 @@ export function SettingsScreen({ config }: Props) {
   return (
     <Box flexDirection="column" gap={1} padding={1}>
       <Text color={config.theme.highlight} bold>Settings</Text>
-      <Text color={config.theme.subtle}>Edit ~/.config/&lt;appname&gt;/config.toml to change settings.</Text>
+      <Text color={config.theme.subtle}>Edit ~/.config/subtsui/config.toml to change settings.</Text>
       <Box flexDirection="column" marginTop={1}>
         <Text color={config.theme.subtle}>Volume: {config.app.defaultVolume}</Text>
         <Text color={config.theme.subtle}>Gapless: {config.app.gaplessPlayback}</Text>

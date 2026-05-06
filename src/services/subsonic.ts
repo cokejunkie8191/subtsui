@@ -71,7 +71,7 @@ export class SubsonicClient {
   private buildParams(extra: Record<string, string> = {}): URLSearchParams {
     const params = new URLSearchParams({
       v: '1.16.1',
-      c: 'tuimusic',
+      c: 'subtsui',
       f: 'json',
       u: this.creds.username,
       ...extra,
