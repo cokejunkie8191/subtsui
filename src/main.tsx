@@ -1,5 +1,9 @@
 // src/main.tsx
 import React from 'react'
-import { render, Text } from 'ink'
+import { render } from 'ink'
+import { App } from './app'
 
-render(<Text color="green">TUI Player starting...</Text>)
+const { unmount } = render(<App />, { patchConsole: true })
+
+process.on('SIGTERM', () => { unmount(); process.exit(0) })
+process.on('SIGINT', () => { unmount(); process.exit(0) })
