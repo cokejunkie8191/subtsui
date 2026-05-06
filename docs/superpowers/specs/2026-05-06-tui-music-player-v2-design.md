@@ -115,7 +115,7 @@ tests/
   unit/
     keyrouter.test.ts               # 新規
     nav.store.test.ts               # 新規
-    queue.test.ts                   # 既存 + loopMode テスト追加
+    queue.test.ts                   # 既存 + jumpTo テスト追加
     scrobble.test.ts                # 既存
     config.test.ts                  # 既存
     keybinds.test.ts                # 既存
@@ -157,6 +157,7 @@ type NavState = {
   activeTab: Tab
   stacks: Record<Tab, Screen[]>           // 各タブの履歴
   modal: Screen | null                    // NowPlaying など全画面モーダル
+  textInputFocused: boolean               // Layer 3 ON フラグ（TextInput 側が立て下げ）
 
   setTab: (t: Tab) => void                // タブ切替（スタック保持）
   push: (s: Screen) => void               // 現タブのスタック末尾に追加
@@ -164,21 +165,16 @@ type NavState = {
   replace: (s: Screen) => void            // 末尾置き換え
   openModal: (s: Screen) => void
   closeModal: () => void
+  setTextInputFocused: (v: boolean) => void
 }
 ```
 
-**初期状態:**
-```typescript
-{
-  activeTab: 'library',
-  stacks: {
-    library: [makeAlbumsScreen()],
-    queue:   [makeQueueScreen()],
-    search:  [makeSearchScreen()],
-  },
-  modal: null,
-}
-```
+**初期化:**
+- 初期は `stacks` が空、`activeTab='library'` で「Loading...」を表示
+- `loadConfig` + `loadCredentials` 完了後、credentials がなければ `replace(LoginScreen)`
+- `initServices()` 成功後、各タブのルートを `replace`：library に AlbumsScreen、queue に QueueScreen、search に SearchScreen
+
+各 Screen ファクトリは必要なサービスを引数で受け取る形（例: `makeAlbumsScreen(subsonic)`）。
 
 ### キーボードルーティング（3層）
 
@@ -259,8 +255,8 @@ type NavState = {
 | ストア | 役割 |
 |---|---|
 | `player.store` | 再生状態 (status/song/position/volume/loopMode/error) |
-| `queue.store` | キュー、現在曲インデックス、loopMode 対応 next/prev |
-| `nav.store` | タブ・各タブの履歴スタック・モーダル状態 |
+| `queue.store` | キュー、現在曲インデックス、next/prev（末尾は null、ラップは呼び出し側） |
+| `nav.store` | タブ・各タブの履歴スタック・モーダル状態・textInputFocused |
 | `library.store` | Albums キャッシュ（newest 順、ページング状態） |
 | `status.store` | StatusLine の最新メッセージ・自動消去タイマー |
 
@@ -373,19 +369,24 @@ Esc を 3回押す
 mpv → emit('end-file', reason)
   reason !== 'eof' なら無視
 
-handleSongEnd:
-  ├ loopMode === 'one' →
+handleSongEnd（app.tsx に閉じる、queue.store は loopMode を知らない）:
+  const lm = player.loopMode
+  ├ lm === 'one' →
   │     mpv.loadFile(streamUrl(currentSong))
   │     scrobble.onSongStart(currentSong)
   │
-  ├ loopMode === 'all' →
-  │     s = queue.next() (末尾なら先頭にラップ)
-  │     再生
+  ├ lm === 'all' →
+  │     s = queue.next()
+  │     if (!s) {
+  │       queue.jumpTo(0)            # 末尾→先頭ラップ
+  │       s = queue.items[0] ?? null
+  │     }
+  │     if s: 再生
   │
-  └ loopMode === 'none' →
-        s = queue.next() (末尾なら null)
+  └ lm === 'none' →
+        s = queue.next()
         if s: 再生
-        else: player.status = 'stopped'
+        else: player.setStatus('stopped')
 ```
 
 ---
@@ -614,9 +615,9 @@ tests/unit/nav.store.test.ts            ★最重要
 
 tests/unit/queue.test.ts (既存ベース + 拡張)
   - enqueueLast, enqueueNext, remove, clear, jumpTo
-  - next() の loopMode='all' でラップ
-  - next() の loopMode='one' で同インデックス
-  - next() が末尾で null（loopMode='none')
+  - next() が currentIndex を進める
+  - next() が末尾で null を返す（ラップ処理は呼び出し側の責務）
+  - prev() が先頭で null を返す
 
 tests/unit/scrobble.test.ts (既存)
 tests/unit/config.test.ts (既存)
@@ -699,7 +700,7 @@ tests/integration/screen-stack.test.ts  ★新規
 - `config/*` — defaults のキーバインドを Layer 1/2 分離形式に書き換え
 - `types/*` — そのまま
 - `stores/player.store.ts` — そのまま
-- `stores/queue.store.ts` — `jumpTo(i)` 追加、`next()` を loopMode 対応
+- `stores/queue.store.ts` — `jumpTo(i)` 追加。`next()` は loopMode を関知せず末尾で null を返す（loopMode 判定は呼び出し側）
 
 **新規:**
 - `framework/Screen.ts`, `framework/KeyRouter.tsx`, `framework/WindowList.tsx`, `framework/safeLoad.ts`
@@ -729,7 +730,7 @@ Phase 1: 基盤
 
 Phase 2: ストア再構成
   4. nav.store, status.store, library.store
-  5. queue.store の loopMode 対応
+  5. queue.store に jumpTo 追加
 
 Phase 3: 画面実装
   6. AlbumsScreen + AlbumRow + WindowList 統合
