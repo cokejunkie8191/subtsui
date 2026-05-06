@@ -1,10 +1,21 @@
 import type { Credentials } from '../types/config'
 import type { Song, Album, Artist, Playlist, SearchResult, StructuredLyrics } from '../types/subsonic'
 
-class SubsonicError extends Error {
+export class SubsonicError extends Error {
   constructor(public code: number, message: string, public retryable: boolean) {
     super(message)
   }
+}
+
+/** Subsonic の error code を retryable 判定 */
+function isCodeRetryable(code: number): boolean {
+  // 50系（サーバ内部エラー想定）は再試行、40/41（認証）は不可
+  if (code >= 50 && code < 60) return true
+  return false
+}
+
+export function isAuthError(code: number): boolean {
+  return code === 40 || code === 41
 }
 
 function sleep(ms: number) {
@@ -102,7 +113,10 @@ export class SubsonicClient {
         const json = await res.json() as any
         const sr = json['subsonic-response']
         if (sr.status === 'failed') {
-          throw new SubsonicError(sr.error?.code ?? -1, sr.error?.message ?? 'Unknown server error', false)
+          const err = sr.error ?? {}
+          const code = Number(err.code ?? -1)
+          const message = String(err.message ?? 'unknown subsonic error')
+          throw new SubsonicError(code, message, isCodeRetryable(code))
         }
         return sr as T
       } catch (e) {
