@@ -55,7 +55,7 @@ function renderIterm2(imageData: Buffer): string {
   return `\x1b]1337;File=inline=1:${b64}\x07`
 }
 
-const cache = new LRUCache<string, Buffer>({ max: 20 })
+const cache = new LRUCache<string, Buffer>({ max: 50 })
 
 export async function fetchAndRender(
   coverArtUrl: string,
