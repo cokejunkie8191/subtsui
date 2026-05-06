@@ -145,7 +145,7 @@ export class SubsonicClient {
   }
 
   async getAlbumList(
-    type: 'random' | 'newest' | 'highest' | 'frequent' | 'recent' | 'starred',
+    type: 'random' | 'newest' | 'highest' | 'frequent' | 'recent' | 'starred' | 'alphabeticalByName' | 'alphabeticalByArtist',
     opts: { size?: number; offset?: number } = {}
   ): Promise<Album[]> {
     const res = await this.request<any>('getAlbumList2', {
@@ -154,6 +154,12 @@ export class SubsonicClient {
       offset: String(opts.offset ?? 0),
     })
     return (res.albumList2?.album ?? []).map(parseAlbum)
+  }
+
+  async getArtists(): Promise<Artist[]> {
+    const res = await this.request<any>('getArtists')
+    const indices: any[] = res.artists?.index ?? []
+    return indices.flatMap((idx: any) => (idx.artist ?? []).map(parseArtist))
   }
 
   async getArtist(id: string): Promise<{ artist: Artist; albums: Album[] }> {

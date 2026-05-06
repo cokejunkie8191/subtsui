@@ -1,5 +1,5 @@
 // src/components/screens/LibraryScreen.tsx
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Box, Text } from 'ink'
 import { SongTable } from '../shared/SongTable'
 import { useLibraryStore, type LibraryView } from '../../stores/library.store'
@@ -26,40 +26,57 @@ const VIEW_LABELS: Record<LibraryView, string> = {
 }
 
 const VIEWS: LibraryView[] = ['songs', 'albums', 'artists', 'playlists', 'starred']
+const ALBUM_PAGE = 50
+const CONCURRENCY = 5
 
 export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
-  const { view, songs, albums, artists, cursor, isLoading, hasMore, setView, setItems, appendItems, setLoading, setHasMore, setPageOffset, pageOffset } = useLibraryStore()
+  const { view, songs, albums, artists, cursor, isLoading, setItems, appendItems, setLoading, setHasMore } = useLibraryStore()
   const { enqueueLast, setCurrentIndex } = useQueueStore()
   const { setCurrentSong } = usePlayerStore()
   const [loadError, setLoadError] = useState<string | null>(null)
+  const cancelRef = useRef(false)
 
   useEffect(() => {
+    cancelRef.current = false
     setLoadError(null)
-    if (view === 'songs' && songs.length === 0) loadSongs(0)
+    if (view === 'songs' && songs.length === 0) loadSongsByAlbums()
     if (view === 'albums' && albums.length === 0) loadAlbums(0)
-    if (view === 'artists' && artists.length === 0) loadArtists(0)
+    if (view === 'artists' && artists.length === 0) loadArtists()
     if (view === 'starred') loadStarred()
+    return () => { cancelRef.current = true }
   }, [view])
 
-  async function loadSongs(offset: number) {
+  // All Songs: アルバム一覧 → 各アルバムの曲を並列ストリーミング
+  async function loadSongsByAlbums() {
     setLoading(true)
+    let albumOffset = 0
     try {
-      const result = await subsonic.search(' ', { songCount: 150, albumCount: 0, artistCount: 0, offset })
-      if (offset === 0) setItems('songs', result.songs)
-      else appendItems('songs', result.songs)
-      setHasMore(result.songs.length === 150)
-      setPageOffset(offset + result.songs.length)
+      while (!cancelRef.current) {
+        const albumBatch = await subsonic.getAlbumList('alphabeticalByName', { size: ALBUM_PAGE, offset: albumOffset })
+        if (albumBatch.length === 0 || cancelRef.current) break
+
+        for (let i = 0; i < albumBatch.length; i += CONCURRENCY) {
+          if (cancelRef.current) break
+          const chunk = albumBatch.slice(i, i + CONCURRENCY)
+          const results = await Promise.all(chunk.map(a => subsonic.getAlbum(a.id)))
+          if (!cancelRef.current) appendItems('songs', results.flatMap(r => r.songs))
+        }
+
+        albumOffset += albumBatch.length
+        if (albumBatch.length < ALBUM_PAGE) break
+      }
+      if (!cancelRef.current) setHasMore(false)
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : 'Failed to load songs')
+      if (!cancelRef.current) setLoadError(e instanceof Error ? e.message : 'Failed to load songs')
     } finally {
-      setLoading(false)
+      if (!cancelRef.current) setLoading(false)
     }
   }
 
   async function loadAlbums(offset: number) {
     setLoading(true)
     try {
-      const result = await subsonic.getAlbumList('newest', { offset })
+      const result = await subsonic.getAlbumList('newest', { size: 150, offset })
       if (offset === 0) setItems('albums', result)
       else appendItems('albums', result)
       setHasMore(result.length === 150)
@@ -70,13 +87,13 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
     }
   }
 
-  async function loadArtists(offset: number) {
+  // Artists: getArtists エンドポイント（全文検索不要で高速）
+  async function loadArtists() {
     setLoading(true)
     try {
-      const result = await subsonic.search(' ', { songCount: 0, albumCount: 0, artistCount: 150, offset })
-      if (offset === 0) setItems('artists', result.artists)
-      else appendItems('artists', result.artists)
-      setHasMore(result.artists.length === 150)
+      const result = await subsonic.getArtists()
+      setItems('artists', result)
+      setHasMore(false)
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Failed to load artists')
     } finally {
@@ -103,8 +120,7 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
     await mpv.loadFile(url)
     setCurrentSong(song)
     scrobble.onSongStart(song)
-    const remaining = songs.slice(index + 1)
-    remaining.forEach(s => enqueueLast(s))
+    songs.slice(index + 1).forEach(s => enqueueLast(s))
     setCurrentIndex(0)
   }
 
@@ -130,13 +146,20 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
       {isLoading && currentItems.length === 0 ? (
         <Text color={config.theme.subtle}>Loading...</Text>
       ) : view === 'songs' || view === 'starred' ? (
-        <SongTable
-          songs={songs}
-          cursor={cursor}
-          columns={config.columns.songs}
-          highlight={config.theme.highlight}
-          subtle={config.theme.subtle}
-        />
+        <Box flexDirection="column" flexGrow={1}>
+          <SongTable
+            songs={songs}
+            cursor={cursor}
+            columns={config.columns.songs}
+            highlight={config.theme.highlight}
+            subtle={config.theme.subtle}
+          />
+          {isLoading && (
+            <Text color={config.theme.subtle} dimColor>
+              {songs.length} songs loaded, streaming more...
+            </Text>
+          )}
+        </Box>
       ) : view === 'albums' ? (
         <Box flexDirection="column">
           {albums.map((a, i) => (
