@@ -63,4 +63,20 @@ describe('ScrobbleService', () => {
       clock.uninstall()
     }
   })
+
+  test('閾値経過後に submission=true を送信する', () => {
+    const clock = lolex.install()
+    try {
+      service.onSongStart(makeSong(300))
+      // 300s曲の50% = 150s = 150000ms でタイマー起動
+      clock.tick(150_000)
+      expect(scrobbleFn).toHaveBeenCalledTimes(2)
+      const completionCall = scrobbleFn.mock.calls[1]
+      expect(completionCall[0]).toBe('song-1')
+      expect(completionCall[1].submission).toBe(true)
+      expect(typeof completionCall[1].time).toBe('number')
+    } finally {
+      clock.uninstall()
+    }
+  })
 })
