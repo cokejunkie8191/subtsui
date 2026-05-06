@@ -21,7 +21,7 @@
 タスクを完了したらチェックボックスを埋め、Phase 末尾の合計を更新する。
 
 - Phase 0 (Branch & Cleanup): 2/2 ✅
-- Phase 1 (Framework): 0/7
+- Phase 1 (Framework): 7/7 ✅
 - Phase 2 (Stores): 0/2
 - Phase 3 (Services): 0/3
 - Phase 4 (Components): 0/7
