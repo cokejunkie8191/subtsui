@@ -101,8 +101,7 @@ export class MpvClient extends EventEmitter {
   }
 
   async loadFile(url: string, startPaused = false): Promise<void> {
-    const mode = startPaused ? 'replace' : 'replace'
-    await this.send(['loadfile', url, mode])
+    await this.send(['loadfile', url, 'replace'])
     if (startPaused) await this.setPause(true)
   }
 
