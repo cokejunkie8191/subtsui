@@ -44,8 +44,8 @@ export const DEFAULT_CONFIG: AppConfig = {
       toggle_now_playing: ['M'],
     },
     navigation: {
-      up: ['j', 'up'],
-      down: ['k', 'down'],
+      up: ['k', 'up'],
+      down: ['j', 'down'],
       top: ['g'],
       bottom: ['G'],
       select: ['return'],

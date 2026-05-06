@@ -12,6 +12,7 @@ import { LoginScreen } from './components/screens/LoginScreen'
 import { useUiStore } from './stores/ui.store'
 import { usePlayerStore } from './stores/player.store'
 import { useQueueStore } from './stores/queue.store'
+import { useLibraryStore } from './stores/library.store'
 import { useKeyHandler } from './hooks/useKeyHandler'
 import { useMpvSync } from './hooks/useMpvSync'
 import { SubsonicClient } from './services/subsonic'
@@ -89,6 +90,43 @@ export function App() {
   }
 
   const handleAction = useCallback(async (category: string, action: string) => {
+    if (category === 'navigation') {
+      const lib = useLibraryStore.getState()
+      const queue = useQueueStore.getState()
+
+      if (action === 'up') lib.moveCursor(-1)
+      if (action === 'down') lib.moveCursor(1)
+      if (action === 'top') lib.setCursor(0)
+      if (action === 'bottom') {
+        const list = lib.view === 'albums' ? lib.albums : lib.view === 'artists' ? lib.artists : lib.songs
+        lib.setCursor(list.length - 1)
+      }
+      if (action === 'filter_next') {
+        const views = ['songs', 'albums', 'artists', 'playlists', 'starred'] as const
+        const next = views[(views.indexOf(lib.view) + 1) % views.length]
+        lib.setView(next)
+      }
+      if (action === 'filter_prev') {
+        const views = ['songs', 'albums', 'artists', 'playlists', 'starred'] as const
+        const prev = views[(views.indexOf(lib.view) - 1 + views.length) % views.length]
+        lib.setView(prev)
+      }
+      if (action === 'select' && mpv && subsonic && scrobble) {
+        if (lib.view === 'songs' || lib.view === 'starred') {
+          const song = lib.songs[lib.cursor]
+          if (!song) return
+          queue.clear()
+          lib.songs.slice(lib.cursor + 1).forEach(s => queue.enqueueLast(s))
+          queue.setCurrentIndex(0)
+          await mpv.loadFile(subsonic.streamUrl(song.id))
+          setCurrentSong(song)
+          scrobble.onSongStart(song)
+          if (config?.app.notifications) sendNowPlayingNotification(song).catch(() => {})
+        }
+      }
+      return
+    }
+
     if (!mpv || !subsonic || !scrobble) return
 
     if (category === 'playback') {
@@ -121,7 +159,7 @@ export function App() {
       if (action === 'tab_4') setTab('settings')
       if (action === 'quit') { await mpv.quit(); process.exit(0) }
     }
-  }, [mpv, subsonic, scrobble, volume, next, prev, nextTab, prevTab, setTab, toggleNowPlaying, nextLoopMode])
+  }, [mpv, subsonic, scrobble, config, volume, next, prev, nextTab, prevTab, setTab, toggleNowPlaying, nextLoopMode, setCurrentSong])
 
   if (!config) return <Text>Loading...</Text>
   if (showLogin) return <LoginScreen onLogin={handleLogin} error={loginError} />
