@@ -175,7 +175,13 @@ export function App() {
         ) : activeTab === 'queue' ? (
           <QueueScreen config={config} />
         ) : activeTab === 'search' && subsonic ? (
-          <SearchScreen config={config} subsonic={subsonic} />
+          <SearchScreen config={config} subsonic={subsonic} onPlay={async (song) => {
+            if (!mpv || !subsonic || !scrobble) return
+            await mpv.loadFile(subsonic.streamUrl(song.id))
+            setCurrentSong(song)
+            scrobble.onSongStart(song)
+            if (config?.app.notifications) sendNowPlayingNotification(song).catch(() => {})
+          }} />
         ) : (
           <SettingsScreen config={config} />
         )}
