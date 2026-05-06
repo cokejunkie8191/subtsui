@@ -29,14 +29,14 @@ export class MpvClient extends EventEmitter {
     await this.quit().catch(() => {})
 
     this.process = Bun.spawn([
-      '/opt/homebrew/bin/mpv',
+      'mpv',
       '--idle',
       '--no-video',
       `--input-ipc-server=${this.socketPath}`,
       `--gapless-audio=${opts.gapless ?? 'yes'}`,
       '--prefetch-playlist=yes',
       `--replaygain=${opts.replaygain ?? 'track'}`,
-    ], { stdout: 'ignore', stderr: 'ignore' })
+    ], { stdout: 'ignore', stderr: 'ignore', env: process.env })
 
     // ソケット作成を待つ（最大1秒）
     for (let i = 0; i < 100; i++) {
