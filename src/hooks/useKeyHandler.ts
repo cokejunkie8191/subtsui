@@ -6,7 +6,7 @@ import type { AppConfig } from '../types/config'
 
 type Handler = (category: string, action: string) => void
 
-export function useKeyHandler(config: AppConfig, onAction: Handler) {
+export function useKeyHandler(config: AppConfig, onAction: Handler, isActive = true) {
   const lastZRef = useRef<number>(0)
 
   useInput((input, key) => {
@@ -22,7 +22,6 @@ export function useKeyHandler(config: AppConfig, onAction: Handler) {
       process.exit(0)
     }
 
-    // Z Z double-tap detection (within 300ms)
     if (pressed === 'Z') {
       const now = Date.now()
       if (now - lastZRef.current < 300) {
@@ -35,5 +34,5 @@ export function useKeyHandler(config: AppConfig, onAction: Handler) {
 
     const action = findAction(pressed, config.keybinds)
     if (action) onAction(action.category, action.action)
-  })
+  }, { isActive })
 }

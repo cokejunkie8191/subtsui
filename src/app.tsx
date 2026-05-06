@@ -181,12 +181,12 @@ export function App() {
         )}
       </Box>
       <PlayerBar config={config} subsonic={subsonic} />
-      {config && <AppKeyHandler config={config} onAction={handleAction} />}
+      {config && <AppKeyHandler config={config} onAction={handleAction} isActive={activeTab !== 'search'} />}
     </Box>
   )
 }
 
-function AppKeyHandler({ config, onAction }: { config: AppConfig; onAction: (c: string, a: string) => void }) {
-  useKeyHandler(config, onAction)
+function AppKeyHandler({ config, onAction, isActive }: { config: AppConfig; onAction: (c: string, a: string) => void; isActive: boolean }) {
+  useKeyHandler(config, onAction, isActive)
   return null
 }

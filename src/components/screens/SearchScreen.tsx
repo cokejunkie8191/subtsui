@@ -15,15 +15,19 @@ export function SearchScreen({ config, subsonic }: Props) {
   const [filter, setFilter] = useState<'songs' | 'albums' | 'artists'>('songs')
   const [cursor, setCursor] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!query.trim()) { setResults({ songs: [], albums: [], artists: [] }); return }
     const timer = setTimeout(async () => {
       setIsLoading(true)
+      setSearchError(null)
       try {
         const res = await subsonic.search(query)
         setResults(res)
         setCursor(0)
+      } catch (e) {
+        setSearchError(e instanceof Error ? e.message : 'Search failed')
       } finally {
         setIsLoading(false)
       }
@@ -37,6 +41,7 @@ export function SearchScreen({ config, subsonic }: Props) {
         <Text color={config.theme.subtle}>/</Text>
         <TextInput value={query} onChange={setQuery} placeholder="Search songs, albums, artists..." />
       </Box>
+      {searchError && <Text color="#f87171">Error: {searchError}</Text>}
       <Box gap={2} marginBottom={1}>
         {(['songs', 'albums', 'artists'] as const).map(f => (
           <Text

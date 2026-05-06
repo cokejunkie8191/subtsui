@@ -33,6 +33,7 @@ export class MpvClient extends EventEmitter {
       '--idle',
       '--no-video',
       `--input-ipc-server=${this.socketPath}`,
+      `--volume=${opts.volume ?? 80}`,
       `--gapless-audio=${opts.gapless ?? 'yes'}`,
       '--prefetch-playlist=yes',
       `--replaygain=${opts.replaygain ?? 'track'}`,
