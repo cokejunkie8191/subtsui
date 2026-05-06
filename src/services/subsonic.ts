@@ -13,7 +13,9 @@ function sleep(ms: number) {
 
 function isRetryable(e: unknown): boolean {
   if (e instanceof SubsonicError) return e.retryable
-  return e instanceof TypeError  // network error
+  if (e instanceof TypeError) return true  // network error
+  if (e instanceof DOMException && e.name === 'TimeoutError') return true
+  return false
 }
 
 function parseSong(raw: any): Song {
@@ -93,7 +95,7 @@ export class SubsonicClient {
 
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const res = await fetch(url, { signal: AbortSignal.timeout(20_000) })
+        const res = await fetch(url, { signal: AbortSignal.timeout(30_000) })
         if (!res.ok) {
           throw new SubsonicError(res.status, res.statusText, attempt < 2)
         }

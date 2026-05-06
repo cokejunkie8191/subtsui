@@ -1,5 +1,5 @@
 // src/components/screens/LibraryScreen.tsx
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Text } from 'ink'
 import { SongTable } from '../shared/SongTable'
 import { useLibraryStore, type LibraryView } from '../../stores/library.store'
@@ -31,8 +31,10 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
   const { view, songs, albums, artists, cursor, isLoading, hasMore, setView, setItems, appendItems, setLoading, setHasMore, setPageOffset, pageOffset } = useLibraryStore()
   const { enqueueLast, setCurrentIndex } = useQueueStore()
   const { setCurrentSong } = usePlayerStore()
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
+    setLoadError(null)
     if (view === 'songs' && songs.length === 0) loadSongs(0)
     if (view === 'albums' && albums.length === 0) loadAlbums(0)
     if (view === 'artists' && artists.length === 0) loadArtists(0)
@@ -42,11 +44,13 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
   async function loadSongs(offset: number) {
     setLoading(true)
     try {
-      const result = await subsonic.search('', { songCount: 150, albumCount: 0, artistCount: 0, offset })
+      const result = await subsonic.search(' ', { songCount: 150, albumCount: 0, artistCount: 0, offset })
       if (offset === 0) setItems('songs', result.songs)
       else appendItems('songs', result.songs)
       setHasMore(result.songs.length === 150)
       setPageOffset(offset + result.songs.length)
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Failed to load songs')
     } finally {
       setLoading(false)
     }
@@ -59,6 +63,8 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
       if (offset === 0) setItems('albums', result)
       else appendItems('albums', result)
       setHasMore(result.length === 150)
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Failed to load albums')
     } finally {
       setLoading(false)
     }
@@ -67,10 +73,12 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
   async function loadArtists(offset: number) {
     setLoading(true)
     try {
-      const result = await subsonic.search('', { songCount: 0, albumCount: 0, artistCount: 150, offset })
+      const result = await subsonic.search(' ', { songCount: 0, albumCount: 0, artistCount: 150, offset })
       if (offset === 0) setItems('artists', result.artists)
       else appendItems('artists', result.artists)
       setHasMore(result.artists.length === 150)
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Failed to load artists')
     } finally {
       setLoading(false)
     }
@@ -81,6 +89,8 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
     try {
       const result = await subsonic.getStarred()
       setItems('songs', result.songs)
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Failed to load starred')
     } finally {
       setLoading(false)
     }
@@ -104,6 +114,7 @@ export function LibraryScreen({ config, subsonic, mpv, scrobble }: Props) {
 
   return (
     <Box flexDirection="column" flexGrow={1}>
+      {loadError && <Text color="#f87171">Error: {loadError}</Text>}
       <Box gap={2} marginBottom={1}>
         {VIEWS.map(v => (
           <Text
