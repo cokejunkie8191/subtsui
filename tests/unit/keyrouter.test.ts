@@ -1,6 +1,6 @@
 // tests/unit/keyrouter.test.ts
 import { describe, test, expect } from 'bun:test'
-import { decideRoute } from '../../src/framework/keyRouter'
+import { decideRoute } from '../../src/framework/routing'
 import type { Screen, KeyEvent } from '../../src/framework/Screen'
 
 const baseScreen: Screen = {
@@ -53,20 +53,20 @@ describe('decideRoute', () => {
 
 describe('resolveActiveScreen', () => {
   test('modal があれば modal を返す', async () => {
-    const { resolveActiveScreen } = await import('../../src/framework/keyRouter')
+    const { resolveActiveScreen } = await import('../../src/framework/routing')
     const m: Screen = { ...baseScreen, id: 'm' }
     const top: Screen = { ...baseScreen, id: 'top' }
     expect(resolveActiveScreen(m, top)?.id).toBe('m')
   })
 
   test('modal なしなら topOfStack を返す', async () => {
-    const { resolveActiveScreen } = await import('../../src/framework/keyRouter')
+    const { resolveActiveScreen } = await import('../../src/framework/routing')
     const top: Screen = { ...baseScreen, id: 'top' }
     expect(resolveActiveScreen(null, top)?.id).toBe('top')
   })
 
   test('両方なしなら null', async () => {
-    const { resolveActiveScreen } = await import('../../src/framework/keyRouter')
+    const { resolveActiveScreen } = await import('../../src/framework/routing')
     expect(resolveActiveScreen(null, undefined)).toBeNull()
   })
 })

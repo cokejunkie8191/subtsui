@@ -2,7 +2,7 @@
 import React, { useRef } from 'react'
 import { useInput } from 'ink'
 import { useNavStore } from '../stores/nav.store'
-import { decideRoute, resolveActiveScreen } from './keyRouter'
+import { decideRoute, resolveActiveScreen } from './routing'
 import type { KeyEvent } from './Screen'
 
 type GlobalHandler = (e: KeyEvent) => void
