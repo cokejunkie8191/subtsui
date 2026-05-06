@@ -1,6 +1,7 @@
 // src/components/screens/SearchScreen.tsx
 import React, { useState, useEffect } from 'react'
-import { Box, Text, TextInput } from 'ink'
+import { Box, Text } from 'ink'
+import TextInput from 'ink-text-input'
 import { SongTable } from '../shared/SongTable'
 import type { AppConfig } from '../../types/config'
 import type { SubsonicClient } from '../../services/subsonic'

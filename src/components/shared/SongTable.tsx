@@ -33,19 +33,19 @@ export function SongTable({ songs, cursor, currentSongId, columns, highlight, su
       {songs.map((song, i) => {
         const isPlaying = song.id === currentSongId
         const isSelected = i === cursor
-        const color = isPlaying ? highlight : isSelected ? '#ffffff' : subtle
-        const bg = isSelected && !isPlaying ? '#1e293b' : undefined
+        const color = isPlaying ? highlight : isSelected ? highlight : subtle
+        const inv = isSelected && !isPlaying
 
         return (
-          <Box key={song.id} backgroundColor={bg}>
-            <Text color={isPlaying ? highlight : subtle}>{isPlaying ? '▶ ' : '  '}</Text>
-            {columns.trackNumber && <Text color={color}>{String(song.trackNumber ?? '').padStart(2)} </Text>}
-            {columns.title && <Text color={color}>{truncate(song.title, 28)}</Text>}
-            {columns.artist && <Text color={color}> {truncate(song.artist, 18)}</Text>}
-            {columns.album && <Text color={color}> {truncate(song.album, 18)}</Text>}
-            {columns.year && <Text color={color}> {String(song.year ?? '').padStart(4)}</Text>}
-            {columns.rating && <Text color={color}> {ratingStr(song.rating)}</Text>}
-            {columns.duration && <Text color={color}> {fmtDuration(song.duration)}</Text>}
+          <Box key={song.id}>
+            <Text color={isPlaying ? highlight : subtle} inverse={inv}>{isPlaying ? '▶ ' : '  '}</Text>
+            {columns.trackNumber && <Text color={color} inverse={inv}>{String(song.trackNumber ?? '').padStart(2)} </Text>}
+            {columns.title && <Text color={color} inverse={inv}>{truncate(song.title, 28)}</Text>}
+            {columns.artist && <Text color={color} inverse={inv}> {truncate(song.artist, 18)}</Text>}
+            {columns.album && <Text color={color} inverse={inv}> {truncate(song.album, 18)}</Text>}
+            {columns.year && <Text color={color} inverse={inv}> {String(song.year ?? '').padStart(4)}</Text>}
+            {columns.rating && <Text color={color} inverse={inv}> {ratingStr(song.rating)}</Text>}
+            {columns.duration && <Text color={color} inverse={inv}> {fmtDuration(song.duration)}</Text>}
           </Box>
         )
       })}

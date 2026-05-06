@@ -1,6 +1,7 @@
 // src/components/screens/LoginScreen.tsx
 import React, { useState } from 'react'
-import { Box, Text, TextInput } from 'ink'
+import { Box, Text } from 'ink'
+import TextInput from 'ink-text-input'
 import type { Credentials } from '../../types/config'
 
 type Props = {
