@@ -12,6 +12,8 @@ export class MpvClient extends EventEmitter {
   private nextId = 1
   private buffer = ''
   private process: ReturnType<typeof Bun.spawn> | null = null
+  private lastFile: string | null = null
+  private lastPos: number = 0
   readonly socketPath: string
 
   constructor(socketPath?: string) {
@@ -103,6 +105,8 @@ export class MpvClient extends EventEmitter {
 
   async loadFile(url: string, startPaused = false): Promise<void> {
     await this.send(['loadfile', url, 'replace'])
+    this.lastFile = url
+    this.lastPos = 0
     if (startPaused) await this.setPause(true)
   }
 
@@ -128,6 +132,7 @@ export class MpvClient extends EventEmitter {
 
   async seekAbsolute(seconds: number): Promise<void> {
     await this.send(['seek', seconds, 'absolute'])
+    this.lastPos = seconds
   }
 
   async setVolume(volume: number): Promise<void> {
@@ -142,12 +147,27 @@ export class MpvClient extends EventEmitter {
       this.send(['get_property', 'volume']).catch(() => 80),
       this.send(['get_property', 'path']).catch(() => null),
     ])
+    this.lastPos = Number(pos ?? this.lastPos)
     return {
       paused: !!paused,
       position: Number(pos ?? 0),
       duration: Number(dur ?? 0),
       volume: Number(vol ?? 80),
       path: path ?? null,
+    }
+  }
+
+  async respawn(opts: {
+    volume?: number
+    gapless?: 'yes' | 'no' | 'weak'
+    replaygain?: 'track' | 'album' | 'no'
+  }): Promise<void> {
+    const file = this.lastFile
+    const pos = this.lastPos
+    await this.spawn(opts)
+    if (file) {
+      await this.loadFile(file)
+      if (pos > 0) await this.seekAbsolute(pos)
     }
   }
 
