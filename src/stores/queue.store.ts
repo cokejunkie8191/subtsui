@@ -14,6 +14,7 @@ type QueueState = {
   next: () => Song | null
   prev: () => Song | null
   setCurrentIndex: (index: number) => void
+  jumpTo: (index: number) => void
 }
 
 export const useQueueStore = create<QueueState>((set, get) => ({
@@ -70,4 +71,9 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   },
 
   setCurrentIndex: (index) => set({ currentIndex: index }),
+
+  jumpTo: (index) => set(s => {
+    if (index < 0 || index >= s.items.length) return s
+    return { currentIndex: index }
+  }),
 }))

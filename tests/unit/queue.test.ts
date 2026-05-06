@@ -50,4 +50,28 @@ describe('QueueStore', () => {
     useQueueStore.getState().moveUp(2)
     expect(useQueueStore.getState().items.map(s => s.id)).toEqual(['1', '3', '2'])
   })
+
+  test('jumpTo: 指定インデックスを currentIndex に設定する', () => {
+    useQueueStore.setState({ items: [makeSong('1'), makeSong('2'), makeSong('3')], currentIndex: 0 })
+    useQueueStore.getState().jumpTo(2)
+    expect(useQueueStore.getState().currentIndex).toBe(2)
+  })
+
+  test('jumpTo: 範囲外は currentIndex を変更しない', () => {
+    useQueueStore.setState({ items: [makeSong('1'), makeSong('2')], currentIndex: 0 })
+    useQueueStore.getState().jumpTo(5)
+    expect(useQueueStore.getState().currentIndex).toBe(0)
+    useQueueStore.getState().jumpTo(-1)
+    expect(useQueueStore.getState().currentIndex).toBe(0)
+  })
+
+  test('next: 末尾で null を返す（loopMode を関知しない）', () => {
+    useQueueStore.setState({ items: [makeSong('1'), makeSong('2')], currentIndex: 1 })
+    expect(useQueueStore.getState().next()).toBeNull()
+  })
+
+  test('prev: 先頭で null を返す', () => {
+    useQueueStore.setState({ items: [makeSong('1'), makeSong('2')], currentIndex: 0 })
+    expect(useQueueStore.getState().prev()).toBeNull()
+  })
 })
