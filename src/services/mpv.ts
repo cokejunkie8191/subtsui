@@ -58,7 +58,13 @@ export class MpvClient extends EventEmitter {
       sock.once('connect', () => {
         this.socket = sock
         sock.on('data', chunk => this.onData(chunk.toString()))
-        sock.on('close', () => this.emit('disconnect'))
+        sock.on('close', () => {
+          this.socket = null
+          // pending リクエストを reject して polling が即座に失敗を検知できるように
+          for (const [, p] of this.pending) p.reject(new Error('MPV socket closed'))
+          this.pending.clear()
+          this.emit('disconnect')
+        })
         resolve()
       })
       sock.once('error', reject)
@@ -107,7 +113,8 @@ export class MpvClient extends EventEmitter {
     await this.send(['loadfile', url, 'replace'])
     this.lastFile = url
     this.lastPos = 0
-    if (startPaused) await this.setPause(true)
+    // 前曲の pause 状態を引き継がないよう明示的にクリア
+    await this.setPause(startPaused)
   }
 
   async appendFile(url: string): Promise<void> {

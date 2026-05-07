@@ -105,6 +105,8 @@ function MainApp({ config, creds, onAuthError }: {
 
       // playbackController で再生関連の操作を一元化する
       const playSong = async (song: Song) => {
+        // 前曲の scrobble 完了タイマーをキャンセル
+        scrobble.onSongSkip()
         usePlayerStore.getState().setCurrentSong(song)
         try {
           await mpv.loadFile(subsonic.streamUrl(song.id))
