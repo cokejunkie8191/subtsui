@@ -3,6 +3,7 @@ import React, { useRef } from 'react'
 import { useInput } from 'ink'
 import { useNavStore } from '../stores/nav.store'
 import { decideRoute, resolveActiveScreen } from './routing'
+import { detectDoubleTap } from './quit'
 import type { KeyEvent } from './Screen'
 
 type GlobalHandler = (e: KeyEvent) => void
@@ -36,20 +37,15 @@ export function KeyRouter({ onGlobalKey, children }: Props) {
 
     if (route === 'blocked') return
 
+    // q q double-tap: text input 中以外は常に有効（modal open 時も含む）
+    const result = detectDoubleTap(input, lastZRef.current)
+    if (result === 'quit') { process.exit(0) }
+    if (result === 'first-tap') { lastZRef.current = Date.now(); return }
+
     // Layer 2: Screen の onKey
     if (active.onKey?.(e)) return
 
     if (route === 'screen-only') return
-
-    // Z Z double-tap (Layer 1)
-    if (input === 'Z') {
-      const now = Date.now()
-      if (now - lastZRef.current < 300) {
-        process.exit(0)
-      }
-      lastZRef.current = now
-      return
-    }
 
     // Layer 1
     onGlobalKey(e)
