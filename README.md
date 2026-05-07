@@ -38,6 +38,11 @@ bun install
 bun link        # register the `subtsui` command globally
 ```
 
+> **Note:** `bun link` installs the binary to `~/.bun/bin`. Make sure it is in your `PATH`:
+> ```sh
+> export PATH="$HOME/.bun/bin:$PATH"  # add to ~/.zshrc or ~/.bashrc
+> ```
+
 ## Quick start
 
 ```sh
