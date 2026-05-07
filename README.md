@@ -35,12 +35,13 @@ that plays nicely with text inputs.
 git clone https://github.com/cokejunkie8191/subtsui.git
 cd subtsui
 bun install
+bun link        # register the `subtsui` command globally
 ```
 
 ## Quick start
 
 ```sh
-bun run src/main.tsx
+subtsui
 ```
 
 On first run you will see a login screen. Enter your Subsonic server URL,
@@ -153,7 +154,8 @@ For the long version, see [`docs/steering/`](docs/steering).
 ```sh
 bun run typecheck     # tsc --noEmit
 bun test              # unit + integration
-bun run src/main.tsx  # start the app
+subtsui               # start the app (requires bun link)
+bun run src/main.tsx  # start without installing
 ```
 
 ## Roadmap
