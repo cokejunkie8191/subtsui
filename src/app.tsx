@@ -168,6 +168,8 @@ function MainApp({ config, creds, onAuthError }: {
         try {
           const status = await mpv.getStatus()
           usePlayerStore.getState().syncFromMpv(status)
+          // 実再生ポジションベースで完了スクロブルを判定（ポーズ中は進まない）
+          if (!status.paused) scrobble.onPositionUpdate(status.position)
           failureCount = 0
         } catch {
           failureCount++

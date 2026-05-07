@@ -13,7 +13,9 @@ export type ScrobbleOptions = {
 }
 
 export class ScrobbleService {
-  private timer: ReturnType<typeof setTimeout> | null = null
+  private currentSong: Song | null = null
+  private songStartedAtMs = 0
+  private completed = false
   private readonly submitOnComplete: boolean
 
   constructor(
@@ -24,35 +26,44 @@ export class ScrobbleService {
   }
 
   onSongStart(song: Song): void {
-    this.cancelPending()
-
-    if (song.duration < 30) return
-
-    // Now Playing 即時通知（常に送る）
+    // 30秒未満の曲はそもそもスクロブル対象外（Last.fm 仕様）
+    if (song.duration < 30) {
+      this.currentSong = null
+      this.completed = false
+      return
+    }
+    this.currentSong = song
+    this.songStartedAtMs = Date.now()
+    this.completed = false
+    // Now Playing 即時通知
     this.scrobble(song.id, { submission: false })
+  }
 
-    // 完了スクロブル（オプション）
+  /**
+   * 再生ポジション（秒）の更新ごとに呼ぶ。
+   * 実際の再生時間が閾値（50% または 240秒の早い方）を超えたタイミングで
+   * 一度だけ submission=true を送信する。ポーズ中は position が進まないので
+   * 自然に発火が遅延する。
+   */
+  onPositionUpdate(positionSec: number): void {
     if (!this.submitOnComplete) return
-
-    const startedAt = Date.now()
-    const thresholdMs = Math.min(song.duration * 0.5, 240) * 1000
-    this.timer = setTimeout(() => {
-      this.scrobble(song.id, { submission: true, time: startedAt })
-    }, thresholdMs)
+    if (!this.currentSong) return
+    if (this.completed) return
+    const threshold = Math.min(this.currentSong.duration * 0.5, 240)
+    if (positionSec < threshold) return
+    this.completed = true
+    this.scrobble(this.currentSong.id, {
+      submission: true,
+      time: this.songStartedAtMs,
+    })
   }
 
   onSongSkip(): void {
-    this.cancelPending()
+    this.currentSong = null
+    this.completed = false
   }
 
   destroy(): void {
-    this.cancelPending()
-  }
-
-  private cancelPending(): void {
-    if (this.timer !== null) {
-      clearTimeout(this.timer)
-      this.timer = null
-    }
+    this.currentSong = null
   }
 }
