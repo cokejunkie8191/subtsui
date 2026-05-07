@@ -147,7 +147,7 @@ Three principles drive the design:
 3. **Stores are independent** — no store imports another. Cross-store
    coordination lives in the call site (`app.tsx` and `Screen.onKey`).
 
-For the long version, see [`docs/steering/`](docs/steering).
+For the long version, see [`docs/architecture/`](docs/architecture).
 
 ## Development
 
