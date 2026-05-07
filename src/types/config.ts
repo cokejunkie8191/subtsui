@@ -39,6 +39,11 @@ export type AppConfig = {
     gaplessPlayback: 'yes' | 'no' | 'weak'
     replaygain: 'track' | 'album' | 'no'
     notifications: boolean
+    /**
+     * クライアント側から完了スクロブル (submission=true) を送信するか。
+     * デフォルト true。サーバ側で独自に Last.fm 連携している場合は false にすると重複を防げる。
+     */
+    scrobbleSubmission: boolean
   }
   theme: ThemeConfig
   filters: FiltersConfig

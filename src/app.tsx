@@ -101,7 +101,10 @@ function MainApp({ config, creds, onAuthError }: {
         return
       }
 
-      const scrobble = new ScrobbleService((id, opts) => subsonic.scrobble(id, opts))
+      const scrobble = new ScrobbleService(
+        (id, opts) => subsonic.scrobble(id, opts),
+        { submitOnComplete: config.app.scrobbleSubmission },
+      )
 
       // playbackController で再生関連の操作を一元化する
       const playSong = async (song: Song) => {

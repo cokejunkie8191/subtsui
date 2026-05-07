@@ -21,7 +21,7 @@ describe('ScrobbleService', () => {
 
   beforeEach(() => {
     scrobbleFn = mock(() => Promise.resolve())
-    service = new ScrobbleService(scrobbleFn as any)
+    service = new ScrobbleService(scrobbleFn as any, { submitOnComplete: true })
   })
 
   test('30秒未満の曲はスクロブルリクエストを送らない', async () => {
@@ -75,6 +75,20 @@ describe('ScrobbleService', () => {
       expect(completionCall[0]).toBe('song-1')
       expect(completionCall[1].submission).toBe(true)
       expect(typeof completionCall[1].time).toBe('number')
+    } finally {
+      clock.uninstall()
+    }
+  })
+
+  test('submitOnComplete=false なら閾値経過しても submission=true を送らない', () => {
+    const clock = lolex.install()
+    try {
+      const fn = mock(() => Promise.resolve())
+      const svc = new ScrobbleService(fn as any, { submitOnComplete: false })
+      svc.onSongStart(makeSong(300))
+      clock.tick(200_000)
+      expect(fn).toHaveBeenCalledTimes(1) // Now Playing のみ
+      expect(fn).toHaveBeenCalledWith('song-1', { submission: false })
     } finally {
       clock.uninstall()
     }

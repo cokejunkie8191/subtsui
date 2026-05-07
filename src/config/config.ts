@@ -26,6 +26,7 @@ function tomlToAppConfig(raw: Record<string, any>): Partial<AppConfig> {
       gaplessPlayback: raw.app.gapless_playback,
       replaygain: raw.app.replaygain,
       notifications: raw.app.notifications,
+      scrobbleSubmission: raw.app.scrobble_submission,
     }
   }
   if (raw.theme) out.theme = raw.theme

@@ -6,6 +6,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     gaplessPlayback: 'yes',
     replaygain: 'track',
     notifications: true,
+    scrobbleSubmission: true,
   },
   theme: {
     highlight: '#7dd3fc',
