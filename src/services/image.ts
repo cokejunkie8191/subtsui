@@ -92,11 +92,14 @@ export async function fetchAndRender(
   } else if (protocol === 'iterm2') {
     return renderIterm2(imageBuffer)
   } else {
-    // blocks: re-fetch for RGBA
+    // blocks: ターミナルセルの縦横比はおおよそ 1:2（縦が 2 倍長い）
+    // ▀ ブロックは 1 セルで縦 2 ピクセル分を扱うので、
+    // pixelSize × pixelSize の画像を pixelSize 文字幅 × (pixelSize/2) 文字高 で出力すると
+    // 視覚的に正方形になる
     const res = await fetch(coverArtUrl)
     const raw = Buffer.from(await res.arrayBuffer())
     const img = await Jimp.fromBuffer(raw)
-    img.resize({ w: pixelSize, h: pixelSize * 2 }) // 2:1 aspect for half-block chars
-    return renderBlocks(img.bitmap.data as Buffer, pixelSize, pixelSize * 2)
+    img.resize({ w: pixelSize, h: pixelSize })
+    return renderBlocks(img.bitmap.data as Buffer, pixelSize, pixelSize)
   }
 }
