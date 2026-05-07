@@ -1,6 +1,7 @@
 // src/components/AlbumRow.tsx
 import React from 'react'
 import { Box, Text } from 'ink'
+import { padTruncate } from '../framework/textWidth'
 import type { Album } from '../types/subsonic'
 
 type Props = {
@@ -10,19 +11,20 @@ type Props = {
   subtle: string
 }
 
-function truncate(s: string, len: number): string {
-  if (s.length <= len) return s.padEnd(len)
-  return s.slice(0, len - 1) + '…'
-}
+const NAME_WIDTH = 36
+const ARTIST_WIDTH = 24
 
 export function AlbumRow({ album, isCursor, highlight, subtle }: Props) {
   const color = isCursor ? highlight : subtle
   const prefix = isCursor ? '▶ ' : '  '
+  const name = padTruncate(album.name, NAME_WIDTH)
+  const artist = padTruncate(album.artist, ARTIST_WIDTH)
+  const year = String(album.year ?? '----').padStart(4)
+
   return (
     <Box>
       <Text color={color} inverse={isCursor}>
-        {prefix}
-        {truncate(album.name, 28)}  {truncate(album.artist, 22)}  {album.year ?? '----'}
+        {prefix}{name}  {artist}  {year}
       </Text>
     </Box>
   )

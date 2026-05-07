@@ -1,6 +1,7 @@
 // src/components/SongRow.tsx
 import React from 'react'
 import { Box, Text } from 'ink'
+import { padTruncate } from '../framework/textWidth'
 import type { Song } from '../types/subsonic'
 
 type Props = {
@@ -14,10 +15,9 @@ type Props = {
   subtle: string
 }
 
-function truncate(s: string, len: number): string {
-  if (s.length <= len) return s.padEnd(len)
-  return s.slice(0, len - 1) + '…'
-}
+const TITLE_WIDTH = 36
+const ARTIST_WIDTH = 22
+const ALBUM_WIDTH = 22
 
 function fmtDuration(sec: number): string {
   const m = Math.floor(sec / 60)
@@ -32,16 +32,18 @@ export function SongRow({
 }: Props) {
   const color = isPlaying ? highlight : isCursor ? highlight : subtle
   const prefix = isPlaying ? '▶ ' : isCursor ? '▶ ' : '  '
+  const trackNum = showTrackNumber
+    ? (song.trackNumber ? `${song.trackNumber.toString().padStart(2)}.  ` : '    ')
+    : ''
+  const title = padTruncate(song.title, TITLE_WIDTH)
+  const artist = showArtist ? '  ' + padTruncate(song.artist, ARTIST_WIDTH) : ''
+  const album = showAlbum ? '  ' + padTruncate(song.album, ALBUM_WIDTH) : ''
+  const duration = '  ' + fmtDuration(song.duration).padStart(5)
 
   return (
     <Box>
       <Text color={color} inverse={isCursor && !isPlaying}>
-        {prefix}
-        {showTrackNumber && (song.trackNumber ? `${song.trackNumber.toString().padStart(2)}.  ` : '    ')}
-        {truncate(song.title, 32)}
-        {showArtist && `  ${truncate(song.artist, 20)}`}
-        {showAlbum && `  ${truncate(song.album, 20)}`}
-        {`  ${fmtDuration(song.duration)}`}
+        {prefix}{trackNum}{title}{artist}{album}{duration}
       </Text>
     </Box>
   )
