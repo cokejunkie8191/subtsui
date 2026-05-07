@@ -32,7 +32,7 @@ that plays nicely with text inputs.
 ## Installation
 
 ```sh
-git clone https://github.com/<you>/subtsui.git
+git clone https://github.com/cokejunkie8191/subtsui.git
 cd subtsui
 bun install
 ```
