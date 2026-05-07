@@ -9,6 +9,7 @@ import { WindowList } from '../framework/WindowList'
 import { AlbumRow } from '../components/AlbumRow'
 import { safeLoad } from '../framework/safeLoad'
 import type { Screen, KeyEvent } from '../framework/Screen'
+import { isEnter } from '../framework/keys'
 import { makeAlbumDetailScreen } from './AlbumDetailScreen'
 
 const PAGE = 150
@@ -89,7 +90,7 @@ export function makeAlbumsScreen(): Screen {
       if (e.input === 'k' || e.key.upArrow)   { set(Math.max(0,   c - 1)); return true }
       if (e.input === 'g')                    { set(0);             return true }
       if (e.input === 'G')                    { set(max);           return true }
-      if (e.key.return) {
+      if (isEnter(e)) {
         const album = albums[c]
         if (album) useNavStore.getState().push(makeAlbumDetailScreen(album.id, album.name))
         return true

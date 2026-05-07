@@ -8,6 +8,7 @@ import { WindowList } from '../framework/WindowList'
 import { AlbumRow } from '../components/AlbumRow'
 import { safeLoad } from '../framework/safeLoad'
 import type { Screen, KeyEvent } from '../framework/Screen'
+import { isEnter } from '../framework/keys'
 import type { Album, Artist } from '../types/subsonic'
 import { makeAlbumDetailScreen } from './AlbumDetailScreen'
 
@@ -84,7 +85,7 @@ export function makeArtistDetailScreen(artistId: string, fallbackTitle: string =
       if (e.input === 'k' || e.key.upArrow)   { s.set({ cursor: Math.max(0,   s.cursor - 1) }); return true }
       if (e.input === 'g')                    { s.set({ cursor: 0 });   return true }
       if (e.input === 'G')                    { s.set({ cursor: max }); return true }
-      if (e.key.return) {
+      if (isEnter(e)) {
         const album = s.albums[s.cursor]
         if (album) useNavStore.getState().push(makeAlbumDetailScreen(album.id, album.name))
         return true

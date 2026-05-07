@@ -10,6 +10,7 @@ import { SongRow } from '../components/SongRow'
 import { AlbumRow } from '../components/AlbumRow'
 import { safeLoad } from '../framework/safeLoad'
 import type { Screen, KeyEvent } from '../framework/Screen'
+import { isEnter } from '../framework/keys'
 import type { SearchResult } from '../types/subsonic'
 import { makeAlbumDetailScreen } from './AlbumDetailScreen'
 import { makeArtistDetailScreen } from './ArtistDetailScreen'
@@ -181,7 +182,7 @@ export function makeSearchScreen(): Screen {
       if (e.input === 'j' || e.key.downArrow) { st.set({ cursor: Math.min(max, st.cursor + 1) }); return true }
       if (e.input === 'k' || e.key.upArrow)   { st.set({ cursor: Math.max(0,   st.cursor - 1) }); return true }
 
-      if (e.key.return) {
+      if (isEnter(e)) {
         const item: any = list[st.cursor]
         if (!item) return true
         if (st.filter === 'songs') {

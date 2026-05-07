@@ -7,6 +7,7 @@ import { useServices, triggerPlay } from '../framework/ServiceContext'
 import { WindowList } from '../framework/WindowList'
 import { SongRow } from '../components/SongRow'
 import type { Screen, KeyEvent } from '../framework/Screen'
+import { isEnter } from '../framework/keys'
 
 const useCursor = create<{ cursor: number; set: (n: number) => void }>((set) => ({
   cursor: 0,
@@ -63,7 +64,7 @@ export function makeQueueScreen(): Screen {
       if (e.input === 'g')                    { set(0);             return true }
       if (e.input === 'G')                    { set(max);           return true }
 
-      if (e.key.return) {
+      if (isEnter(e)) {
         const song = items[c]
         if (song) {
           useQueueStore.getState().jumpTo(c)

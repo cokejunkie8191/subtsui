@@ -214,6 +214,8 @@ function MainApp({ config, creds, onAuthError }: {
 }
 
 function handleGlobalKey(e: KeyEvent, controller: PlaybackController) {
+  // Enter は Layer 2 専用。Layer 2 で consume されなかった場合でも Layer 1 が誤動作しないよう防御
+  if (e.key.return || e.input === '\r' || e.input === '\n') return
   if (e.input === ' ') return void controller.togglePause()
   if (e.input === 'n') return void controller.next()
   if (e.input === 'p') return void controller.prev()

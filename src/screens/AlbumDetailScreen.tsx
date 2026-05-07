@@ -11,6 +11,7 @@ import { SongRow } from '../components/SongRow'
 import { safeLoad } from '../framework/safeLoad'
 import { triggerPlay } from '../framework/ServiceContext'
 import type { Screen, KeyEvent } from '../framework/Screen'
+import { isEnter } from '../framework/keys'
 import type { Song, Album } from '../types/subsonic'
 
 type DetailState = {
@@ -99,7 +100,7 @@ export function makeAlbumDetailScreen(albumId: string, fallbackTitle: string = '
       if (e.input === 'g')                    { s.set({ cursor: 0 });   return true }
       if (e.input === 'G')                    { s.set({ cursor: max }); return true }
 
-      if (e.key.return) {
+      if (isEnter(e)) {
         const song = s.songs[s.cursor]
         if (song) {
           const queue = useQueueStore.getState()
