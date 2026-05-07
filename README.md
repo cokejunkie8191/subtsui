@@ -93,7 +93,7 @@ down = ["j", "down"]
 | `Tab` / `Shift+Tab` | Cycle tabs |
 | `1` / `2` / `3` | Library / Queue / Search |
 | `/` | Jump to Search |
-| `Z Z` | Quit (double-tap within 300 ms) |
+| `q q` | Quit (double-tap within 300 ms) |
 | `Ctrl+C` | Force quit |
 
 ### Screen-local (Layer 2)
