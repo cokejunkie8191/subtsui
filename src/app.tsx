@@ -257,9 +257,14 @@ function ScreenHost() {
   const top = stacks[activeTab][stacks[activeTab].length - 1]
   const screen = modal ?? top
 
+  const breadcrumb = stacks[activeTab].map(s => s.title).join(' > ') || '(empty)'
+
   return (
     <Box flexDirection="column" height={process.stdout.rows}>
       <TabBar highlight={config.theme.highlight} subtle={config.theme.subtle} />
+      <Box paddingX={1}>
+        <Text color={config.theme.subtle} dimColor>{breadcrumb}</Text>
+      </Box>
       <Box flexGrow={1} paddingX={1}>
         {screen ? screen.render() : <Text>(empty)</Text>}
       </Box>
