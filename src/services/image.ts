@@ -5,12 +5,14 @@ import { Jimp } from 'jimp'
 export type ImageProtocol = 'kitty' | 'iterm2' | 'sixel' | 'blocks'
 
 export function detectProtocol(): ImageProtocol {
-  const term = process.env.TERM_PROGRAM ?? ''
-  const termName = process.env.TERM ?? ''
-  if (term === 'WezTerm') return 'kitty'
-  if (term === 'iTerm.app') return 'iterm2'
-  if (term === 'ghostty') return 'kitty'
-  if (termName.includes('kitty')) return 'kitty'
+  // NOTE: Ink の <Text> は Box 幅で改行を入れるため、Kitty/iTerm2 のような長大な
+  // base64 を含むエスケープシーケンスが分断され、ターミナルで解釈されない。
+  // 当面は blocks（ANSI カラーの ▀）に固定。Ink バイパス実装が入ったら復帰させる。
+  // 環境変数 SUBTSUI_IMAGE_PROTOCOL=kitty|iterm2 で明示的に上書き可。
+  const override = process.env.SUBTSUI_IMAGE_PROTOCOL
+  if (override === 'kitty' || override === 'iterm2' || override === 'sixel' || override === 'blocks') {
+    return override
+  }
   return 'blocks'
 }
 

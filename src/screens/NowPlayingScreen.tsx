@@ -34,7 +34,9 @@ function NowPlayingView() {
   }
 
   const coverArtUrl = subsonic.coverArtUrl(currentSong.albumId, 300)
-  const artSize = Math.min(Math.floor(termWidth * 0.3), 300)
+  // blocks プロトコルでは pixelSize = 文字セル単位で、出力は pixelSize × pixelSize 文字
+  // ターミナルの縦幅も考慮して 24 セル程度にキャップ
+  const artSize = Math.min(Math.max(16, Math.floor(termWidth * 0.15)), 28)
 
   const currentLine = lyrics?.synced
     ? [...(lyrics.lines ?? [])].reverse().find(l => l.start / 1000 <= position)?.value

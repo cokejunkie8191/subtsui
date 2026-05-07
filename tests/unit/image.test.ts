@@ -3,28 +3,35 @@ import { describe, test, expect } from 'bun:test'
 import { detectProtocol, renderBlocks } from '../../src/services/image'
 
 describe('detectProtocol', () => {
-  test('TERM_PROGRAM=WezTerm → kitty', () => {
-    const orig = process.env.TERM_PROGRAM
-    process.env.TERM_PROGRAM = 'WezTerm'
-    expect(detectProtocol()).toBe('kitty')
-    process.env.TERM_PROGRAM = orig
-  })
-
-  test('TERM_PROGRAM=iTerm.app → iterm2', () => {
-    const orig = process.env.TERM_PROGRAM
-    process.env.TERM_PROGRAM = 'iTerm.app'
-    expect(detectProtocol()).toBe('iterm2')
-    process.env.TERM_PROGRAM = orig
-  })
-
-  test('未知のターミナル → blocks', () => {
-    const origProg = process.env.TERM_PROGRAM
-    const origTerm = process.env.TERM
-    process.env.TERM_PROGRAM = 'unknown'
-    process.env.TERM = 'xterm'
+  test('デフォルトは blocks（Ink との互換性のため）', () => {
+    const orig = process.env.SUBTSUI_IMAGE_PROTOCOL
+    delete process.env.SUBTSUI_IMAGE_PROTOCOL
     expect(detectProtocol()).toBe('blocks')
-    process.env.TERM_PROGRAM = origProg
-    process.env.TERM = origTerm
+    if (orig !== undefined) process.env.SUBTSUI_IMAGE_PROTOCOL = orig
+  })
+
+  test('SUBTSUI_IMAGE_PROTOCOL=kitty で上書き可能', () => {
+    const orig = process.env.SUBTSUI_IMAGE_PROTOCOL
+    process.env.SUBTSUI_IMAGE_PROTOCOL = 'kitty'
+    expect(detectProtocol()).toBe('kitty')
+    if (orig === undefined) delete process.env.SUBTSUI_IMAGE_PROTOCOL
+    else process.env.SUBTSUI_IMAGE_PROTOCOL = orig
+  })
+
+  test('SUBTSUI_IMAGE_PROTOCOL=iterm2 で上書き可能', () => {
+    const orig = process.env.SUBTSUI_IMAGE_PROTOCOL
+    process.env.SUBTSUI_IMAGE_PROTOCOL = 'iterm2'
+    expect(detectProtocol()).toBe('iterm2')
+    if (orig === undefined) delete process.env.SUBTSUI_IMAGE_PROTOCOL
+    else process.env.SUBTSUI_IMAGE_PROTOCOL = orig
+  })
+
+  test('不正な SUBTSUI_IMAGE_PROTOCOL 値は無視して blocks', () => {
+    const orig = process.env.SUBTSUI_IMAGE_PROTOCOL
+    process.env.SUBTSUI_IMAGE_PROTOCOL = 'invalid'
+    expect(detectProtocol()).toBe('blocks')
+    if (orig === undefined) delete process.env.SUBTSUI_IMAGE_PROTOCOL
+    else process.env.SUBTSUI_IMAGE_PROTOCOL = orig
   })
 })
 
