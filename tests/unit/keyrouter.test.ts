@@ -1,6 +1,7 @@
 // tests/unit/keyrouter.test.ts
 import { describe, test, expect } from 'bun:test'
 import { decideRoute } from '../../src/framework/routing'
+import { detectDoubleTap } from '../../src/framework/quit'
 import type { Screen, KeyEvent } from '../../src/framework/Screen'
 
 const baseScreen: Screen = {
@@ -48,6 +49,32 @@ describe('decideRoute', () => {
     const modalScreen: Screen = { ...baseScreen, id: 'm', isModal: true }
     const r = decideRoute(ev('n'), { textInputFocused: false, screen: modalScreen, modal: null })
     expect(r).toBe('screen-only')
+  })
+})
+
+describe('detectDoubleTap', () => {
+  test('q q を 300ms 以内に押すと quit', () => {
+    const last = Date.now() - 200
+    expect(detectDoubleTap('q', last, Date.now())).toBe('quit')
+  })
+
+  test('q q でも 300ms 以上経過していると first-tap', () => {
+    const last = Date.now() - 400
+    expect(detectDoubleTap('q', last, Date.now())).toBe('first-tap')
+  })
+
+  test('q の初回タップは first-tap（lastTap=0）', () => {
+    expect(detectDoubleTap('q', 0, Date.now())).toBe('first-tap')
+  })
+
+  test('Z は q q quit に反応しない', () => {
+    const last = Date.now() - 100
+    expect(detectDoubleTap('Z', last, Date.now())).toBe('ignored')
+  })
+
+  test('別のキーは ignored', () => {
+    const last = Date.now() - 100
+    expect(detectDoubleTap('n', last, Date.now())).toBe('ignored')
   })
 })
 
