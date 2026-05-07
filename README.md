@@ -176,4 +176,4 @@ a three-layer keyboard input model.
 
 ## License
 
-TBD.
+MIT — see [LICENSE](LICENSE).
