@@ -2,6 +2,9 @@
   "name": "subtsui",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "subtsui": "src/main.tsx"
+  },
   "scripts": {
     "start": "bun run src/main.tsx",
     "test": "bun test",
