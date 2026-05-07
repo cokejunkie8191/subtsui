@@ -10,6 +10,7 @@ import { sendNowPlayingNotification } from './services/notify'
 import {
   ServiceProvider,
   setGlobalController,
+  setGlobalQuit,
   useServices,
   type Services,
   type PlaybackController,
@@ -197,9 +198,18 @@ function MainApp({ config, creds, onAuthError }: {
       useNavStore.getState().replaceStack('queue',   [makeQueueScreen()])
       useNavStore.getState().replaceStack('search',  [makeSearchScreen()])
 
+      setGlobalQuit(async () => {
+        clearInterval(interval)
+        setGlobalController(null)
+        setGlobalQuit(null)
+        await mpv.quit()
+        process.exit(0)
+      })
+
       return () => {
         clearInterval(interval)
         setGlobalController(null)
+        setGlobalQuit(null)
         mpv.quit().catch(() => {})
       }
     }

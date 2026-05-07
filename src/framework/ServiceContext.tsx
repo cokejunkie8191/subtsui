@@ -47,3 +47,17 @@ export function setGlobalController(c: PlaybackController | null) {
 export function triggerPlay(song: Song) {
   _controller?.playSong(song)
 }
+
+let _quit: (() => Promise<void>) | null = null
+
+export function setGlobalQuit(fn: (() => Promise<void>) | null) {
+  _quit = fn
+}
+
+export async function quit(): Promise<void> {
+  if (_quit) {
+    await _quit()
+  } else {
+    process.exit(0)
+  }
+}

@@ -4,6 +4,7 @@ import { useInput } from 'ink'
 import { useNavStore } from '../stores/nav.store'
 import { decideRoute, resolveActiveScreen } from './routing'
 import { detectDoubleTap } from './quit'
+import { quit } from './ServiceContext'
 import type { KeyEvent } from './Screen'
 
 type GlobalHandler = (e: KeyEvent) => void
@@ -26,7 +27,8 @@ export function KeyRouter({ onGlobalKey, children }: Props) {
     const e: KeyEvent = { input, key }
 
     if (key.ctrl && input === 'c') {
-      process.exit(0)
+      void quit()
+      return
     }
 
     const topOfStack = stacks[activeTab][stacks[activeTab].length - 1]
@@ -39,7 +41,7 @@ export function KeyRouter({ onGlobalKey, children }: Props) {
 
     // q q double-tap: text input 中以外は常に有効（modal open 時も含む）
     const result = detectDoubleTap(input, lastZRef.current)
-    if (result === 'quit') { process.exit(0) }
+    if (result === 'quit') { void quit(); return }
     if (result === 'first-tap') { lastZRef.current = Date.now(); return }
 
     // Layer 2: Screen の onKey
