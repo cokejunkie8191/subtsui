@@ -61,3 +61,13 @@ export async function quit(): Promise<void> {
     process.exit(0)
   }
 }
+
+let _subsonic: SubsonicClient | null = null
+
+export function setGlobalSubsonic(s: SubsonicClient | null) {
+  _subsonic = s
+}
+
+export function getGlobalSubsonic(): SubsonicClient | null {
+  return _subsonic
+}

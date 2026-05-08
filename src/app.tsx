@@ -11,6 +11,7 @@ import {
   ServiceProvider,
   setGlobalController,
   setGlobalQuit,
+  setGlobalSubsonic,
   useServices,
   type Services,
   type PlaybackController,
@@ -89,6 +90,7 @@ function MainApp({ config, creds, onAuthError }: {
         onAuthError(e instanceof Error ? e.message : 'Connection failed')
         return
       }
+      setGlobalSubsonic(subsonic)
 
       const mpv = new MpvClient()
       try {
@@ -201,6 +203,7 @@ function MainApp({ config, creds, onAuthError }: {
       setGlobalQuit(async () => {
         clearInterval(interval)
         setGlobalController(null)
+        setGlobalSubsonic(null)
         setGlobalQuit(null)
         await mpv.quit()
         process.exit(0)
@@ -209,6 +212,7 @@ function MainApp({ config, creds, onAuthError }: {
       return () => {
         clearInterval(interval)
         setGlobalController(null)
+        setGlobalSubsonic(null)
         setGlobalQuit(null)
         mpv.quit().catch(() => {})
       }

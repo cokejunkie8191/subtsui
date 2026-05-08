@@ -11,6 +11,9 @@ import { safeLoad } from '../framework/safeLoad'
 import type { Screen, KeyEvent } from '../framework/Screen'
 import { isEnter } from '../framework/keys'
 import { makeAlbumDetailScreen } from './AlbumDetailScreen'
+import { getGlobalSubsonic } from '../framework/ServiceContext'
+import { useQueueStore } from '../stores/queue.store'
+import { useStatusStore } from '../stores/status.store'
 
 const PAGE = 150
 
@@ -93,6 +96,19 @@ export function makeAlbumsScreen(): Screen {
       if (isEnter(e)) {
         const album = albums[c]
         if (album) useNavStore.getState().push(makeAlbumDetailScreen(album.id, album.name))
+        return true
+      }
+      if (e.input === 'Q') {
+        const album = albums[c]
+        const subsonic = getGlobalSubsonic()
+        if (album && subsonic) {
+          subsonic.getAlbum(album.id).then(r => {
+            r.songs.forEach(s => useQueueStore.getState().enqueueLast(s))
+            useStatusStore.getState().setStatus(`Queued: ${album.name}`, 'info')
+          }).catch(() => {
+            useStatusStore.getState().setStatus('Failed to queue album', 'error')
+          })
+        }
         return true
       }
       if (e.key.escape || e.input === 'h') return true
