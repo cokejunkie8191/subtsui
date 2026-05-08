@@ -14,6 +14,9 @@ import { isEnter } from '../framework/keys'
 import type { SearchResult } from '../types/subsonic'
 import { makeAlbumDetailScreen } from './AlbumDetailScreen'
 import { makeArtistDetailScreen } from './ArtistDetailScreen'
+import { getGlobalSubsonic } from '../framework/ServiceContext'
+import { useQueueStore } from '../stores/queue.store'
+import { useStatusStore } from '../stores/status.store'
 
 type Mode = 'input' | 'results'
 type Filter = 'songs' | 'albums' | 'artists'
@@ -28,7 +31,7 @@ type State = {
   set: (s: Partial<Omit<State, 'set'>>) => void
 }
 
-const useSearchStore = create<State>((set) => ({
+export const useSearchStore = create<State>((set) => ({
   query: '',
   mode: 'input',
   filter: 'songs',
@@ -197,6 +200,26 @@ export function makeSearchScreen(): Screen {
           useNavStore.getState().push(makeArtistDetailScreen(item.id, item.name))
           return true
         }
+      }
+
+      if (e.input === 'q' && st.filter === 'songs') {
+        const song = list[st.cursor] as any
+        if (song) useQueueStore.getState().enqueueLast(song)
+        return true
+      }
+
+      if (e.input === 'Q' && st.filter === 'albums') {
+        const album = list[st.cursor] as any
+        const subsonic = getGlobalSubsonic()
+        if (album && subsonic) {
+          subsonic.getAlbum(album.id).then((r: any) => {
+            r.songs.forEach((s: any) => useQueueStore.getState().enqueueLast(s))
+            useStatusStore.getState().setStatus(`Queued: ${album.name}`, 'info')
+          }).catch(() => {
+            useStatusStore.getState().setStatus('Failed to queue album', 'error')
+          })
+        }
+        return true
       }
 
       return false
