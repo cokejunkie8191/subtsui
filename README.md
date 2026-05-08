@@ -117,7 +117,8 @@ Screen-specific extras:
   album; `q` adds the cursor track to the queue, `Q` adds the whole album.
 - **Queue**: `x` removes the cursor row, `X` clears the queue.
 - **Search**: `/` returns from results to the input field; `Tab` cycles
-  filter (Songs / Albums / Artists) while in results mode.
+  filter (Songs / Albums / Artists) while in results mode; `q` queues the
+  cursor song (Songs filter); `Q` queues the cursor album (Albums filter).
 
 ## Image protocol
 
