@@ -112,6 +112,7 @@ down = ["j", "down"]
 
 Screen-specific extras:
 
+- **Albums**: `Q` queues all tracks of the cursor album.
 - **AlbumDetail**: `Enter` plays the cursor track and queues the rest of the
   album; `q` adds the cursor track to the queue, `Q` adds the whole album.
 - **Queue**: `x` removes the cursor row, `X` clears the queue.
